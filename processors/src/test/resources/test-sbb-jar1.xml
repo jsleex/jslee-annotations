@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sbb-jar PUBLIC "-//Sun Microsystems, Inc.//DTD JAIN SLEE SBB 1.1//EN" "http://java.sun.com/dtd/slee-sbb-jar_1_1.dtd">
+<sbb-jar>
+    <sbb>
+        <sbb-name>Test</sbb-name>
+        <sbb-vendor>Test</sbb-vendor>
+        <sbb-version>1.0</sbb-version>
+        <library-ref>
+            <library-name>ExampleLibrary</library-name>
+            <library-vendor>Test</library-vendor>
+            <library-version>1.0</library-version>
+        </library-ref>
+        <sbb-ref>
+            <sbb-name>ExampleChild</sbb-name>
+            <sbb-vendor>Test</sbb-vendor>
+            <sbb-version>1.0</sbb-version>
+            <sbb-alias>exampleChildSbb</sbb-alias>
+        </sbb-ref>
+        <sbb-classes>
+            <sbb-abstract-class>
+                <sbb-abstract-class-name>sbb.TestSbb1</sbb-abstract-class-name>
+                <cmp-field>
+                    <cmp-field-name>integer</cmp-field-name>
+                </cmp-field>
+                <get-child-relation-method>
+                    <sbb-alias-ref>exampleChildSbb</sbb-alias-ref>
+                    <get-child-relation-method-name>getExampleChildSbb</get-child-relation-method-name>
+                    <default-priority>0</default-priority>
+                </get-child-relation-method>
+            </sbb-abstract-class>
+            <sbb-local-interface>
+                <sbb-local-interface-name>com.jsleex.annotation.example.TestLocalInterface</sbb-local-interface-name>
+            </sbb-local-interface>
+        </sbb-classes>
+        <event event-direction="FireAndReceive" initial-event="True">
+            <event-name>ExampleEvent</event-name>
+            <event-type-ref>
+                <event-type-name>ExampleEvent</event-type-name>
+                <event-type-vendor>Test</event-type-vendor>
+                <event-type-version>1.0</event-type-version>
+            </event-type-ref>
+            <initial-event-select variable="ActivityContext"/>
+            <initial-event-select variable="Event"/>
+        </event>
+        <activity-context-attribute-alias>
+            <attribute-alias-name>alias</attribute-alias-name>
+            <sbb-activity-context-attribute-name>example</sbb-activity-context-attribute-name>
+        </activity-context-attribute-alias>
+        <resource-adaptor-type-binding>
+            <resource-adaptor-type-ref>
+                <resource-adaptor-type-name>ExampleRA</resource-adaptor-type-name>
+                <resource-adaptor-type-vendor>Test</resource-adaptor-type-vendor>
+                <resource-adaptor-type-version>1.0</resource-adaptor-type-version>
+            </resource-adaptor-type-ref>
+            <resource-adaptor-entity-binding>
+                <resource-adaptor-object-name>test-object</resource-adaptor-object-name>
+                <resource-adaptor-entity-link>test-entity</resource-adaptor-entity-link>
+            </resource-adaptor-entity-binding>
+        </resource-adaptor-type-binding>
+        <ejb-ref>
+            <ejb-ref-name>ExampleEjb</ejb-ref-name>
+            <ejb-ref-type>Entity</ejb-ref-type>
+            <home>com.jsleex.ejb.ExampleEJB</home>
+            <remote>remote</remote>
+        </ejb-ref>
+    </sbb>
+    <sbb>
+        <sbb-name>Test2</sbb-name>
+        <sbb-vendor>Test</sbb-vendor>
+        <sbb-version>1.0</sbb-version>
+        <sbb-classes>
+            <sbb-abstract-class reentrant="True">
+                <sbb-abstract-class-name>sbb.TestSbb2</sbb-abstract-class-name>
+                <cmp-field>
+                    <cmp-field-name>integer</cmp-field-name>
+                </cmp-field>
+            </sbb-abstract-class>
+        </sbb-classes>
+    </sbb>
+</sbb-jar>
