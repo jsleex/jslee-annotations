@@ -22,10 +22,7 @@ import com.jsleex.annotation.Sbb;
 import com.jsleex.annotation.processor.xml.common.*;
 import com.jsleex.annotation.processor.xml.service.*;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
+import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -39,11 +36,13 @@ import java.util.Set;
 public class ServiceProcessor extends AbstractProcessor {
     private static final String OUTPUT_FILE = "META-INF/service.xml";
     private static final String DOCTYPE = "<!DOCTYPE service-xml PUBLIC \"-//Sun Microsystems, Inc.//DTD JAIN SLEE Service 1.1//EN\" \"http://java.sun.com/dtd/slee-service-xml_1_1.dtd\">\n";
-    private final XmlFileWriter<ServiceXml> xmlWriter;
+    private XmlFileWriter<ServiceXml> xmlWriter;
     private final ObjectFactory objectFactory = new ObjectFactory();
     private AnnotationFinder annotationFinder;
 
-    public ServiceProcessor() {
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
         try {
             this.xmlWriter = new XmlFileWriter<>(ServiceXml.class, OUTPUT_FILE, DOCTYPE);
         } catch (JSleeXProcessorException e) {

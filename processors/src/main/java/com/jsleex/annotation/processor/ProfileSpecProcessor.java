@@ -21,10 +21,7 @@ package com.jsleex.annotation.processor;
 import com.jsleex.annotation.processor.xml.common.*;
 import com.jsleex.annotation.processor.xml.profile.*;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
+import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -41,14 +38,19 @@ public class ProfileSpecProcessor extends AbstractProcessor {
     private static final String OUTPUT_FILENAME = "META-INF/profile-spec-jar.xml";
     private static final String DOCTYPE = "<!DOCTYPE profile-spec-jar PUBLIC \"-//Sun Microsystems, Inc.//DTD JAIN SLEE Profile Specification 1.1//EN\""
             + " \"http://java.sun.com/dtd/slee-profile-spec-jar_1_1.dtd\">\n";
-    private final ProfileSpecJar profileSpecJar;
-    private final XmlFileWriter<ProfileSpecJar> xmlWriter;
+    private ProfileSpecJar profileSpecJar;
+    private XmlFileWriter<ProfileSpecJar> xmlWriter;
     private AnnotationFinder annotationFinder;
     private ObjectFactory objectFactory = new ObjectFactory();
 
     private boolean isProfileSpecCreated;
 
     public ProfileSpecProcessor() {
+    }
+
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
         try {
             this.xmlWriter = new XmlFileWriter<>(ProfileSpecJar.class, OUTPUT_FILENAME, DOCTYPE);
             this.profileSpecJar = objectFactory.createProfileSpecJar();
