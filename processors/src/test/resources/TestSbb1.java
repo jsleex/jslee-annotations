@@ -26,7 +26,11 @@ import com.jsleex.annotation.example.TestParent;
 import javax.slee.*;
 
 @Service(name = "Test", vendor = "Test", version = "1.0")
-@Sbb(name = "Test", vendor = "Test", version = "1.0", sbbLocalInterfaceName = TestLocalInterface.class)
+@Sbb(name = "Test", vendor = "Test", version = "1.0", sbbLocalInterfaceName = TestLocalInterface.class,
+     securityPermissions = "\n" +
+             "grant {\n" +
+             "    permission java.lang.RuntimePermission \"accessDeclaredMembers\";\n" +
+             "};\n")
 @LibraryRef(name = "ExampleLibrary", vendor = "Test", version = "1.0")
 @RaTypeBinding(resourceAdaptorTypeName = "ExampleRA", resourceAdaptorTypeVendor = "Test", resourceAdaptorTypeVersion = "1.0",
         resourceAdaptorEntityLinks = "test-entity", resourceAdaptorObjectNames = "test-object")

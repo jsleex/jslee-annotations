@@ -18,6 +18,8 @@
 
 package com.jsleex.annotation.processor;
 
+import com.jsleex.annotation.processor.xml.common.SecurityPermissionSpec;
+import com.jsleex.annotation.processor.xml.common.SecurityPermissions;
 import com.jsleex.annotation.processor.xml.sbb.*;
 import jakarta.xml.bind.JAXBException;
 
@@ -55,6 +57,10 @@ public class SbbProcessor extends AbstractProcessor {
             for (Element element : elementSet) {
                 sbbJar.getSbb().addAll(new SbbFromElement(processingEnv).generate(element));
             }
+        }
+        for (TypeElement typeElement : annotations) {
+            final Set<? extends Element> elementSet = roundEnv.getElementsAnnotatedWith(typeElement);
+            sbbJar.setSecurityPermissions(SecurityPermissionsFromElements.generate(elementSet));
         }
         if (!sbbJar.getSbb().isEmpty()) {
             try {

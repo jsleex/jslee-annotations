@@ -77,4 +77,11 @@
             </sbb-abstract-class>
         </sbb-classes>
     </sbb>
+    <security-permissions>
+        <security-permission-spec>
+grant {
+    permission java.lang.RuntimePermission "accessDeclaredMembers";
+};
+</security-permission-spec>
+    </security-permissions>
 </sbb-jar>

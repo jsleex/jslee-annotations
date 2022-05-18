@@ -39,12 +39,6 @@ public class SbbFromElement implements XmlFromElement<Sbb, com.jsleex.annotation
             fillInRaBindings(element, sbb);
             fillInEjbRefs(element, sbb);
 
-            if (!sbbAnnotation.securityPermissions().isEmpty())  {
-                SecurityPermissions securityPermissions = new SecurityPermissions();
-                SecurityPermissionSpec securityPermissionSpec = new SecurityPermissionSpec();
-
-                securityPermissions.setSecurityPermissionSpec(securityPermissionSpec);
-            }
             sbbs.add(sbb);
         } else {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, element.getSimpleName() + " contains com.jsleex.annotation.Sbb annotation but it's not an abstract class.");
