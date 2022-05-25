@@ -22,11 +22,13 @@ import com.jsleex.annotation.*;
 import com.jsleex.annotation.Sbb;
 import com.jsleex.annotation.example.TestLocalInterface;
 import com.jsleex.annotation.example.TestParent;
+import com.jsleex.annotation.example.TestSbbUsage;
 
 import javax.slee.*;
 
 @Service(name = "Test", vendor = "Test", version = "1.0")
 @Sbb(name = "Test", vendor = "Test", version = "1.0", sbbLocalInterfaceName = TestLocalInterface.class,
+     sbbUsageParameterInterfaceName = TestSbbUsage.class,
      securityPermissions = "\n" +
              "grant {\n" +
              "    permission java.lang.RuntimePermission \"accessDeclaredMembers\";\n" +

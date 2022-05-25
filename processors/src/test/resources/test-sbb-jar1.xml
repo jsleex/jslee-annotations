@@ -31,6 +31,9 @@
             <sbb-local-interface>
                 <sbb-local-interface-name>com.jsleex.annotation.example.TestLocalInterface</sbb-local-interface-name>
             </sbb-local-interface>
+            <sbb-usage-parameters-interface>
+                <sbb-usage-parameters-interface-name>com.jsleex.annotation.example.TestSbbUsage</sbb-usage-parameters-interface-name>
+            </sbb-usage-parameters-interface>
         </sbb-classes>
         <event event-direction="FireAndReceive" initial-event="True">
             <event-name>ExampleEvent</event-name>

@@ -29,4 +29,12 @@
         </repository>
     </repositories>
 
+    <distributionManagement>
+        <repository>
+            <id>jsleex</id>
+            <name>GitHub JSleeX Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/jsleex/repo</url>
+        </repository>
+    </distributionManagement>
+
 </project>

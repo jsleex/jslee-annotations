@@ -178,8 +178,10 @@ public class SbbFromElement implements XmlFromElement<Sbb, com.jsleex.annotation
             final String className = typeMirror.toString();
             if (!className.equals(void.class.getCanonicalName())) {
                 final SbbUsageParametersInterface sbbUsageParametersInterface = new SbbUsageParametersInterface();
-                //todo
-//            sbbUsageParametersInterface.setDescription();
+                //todo separate usage parameters
+                SbbUsageParametersInterfaceName interfaceName = new SbbUsageParametersInterfaceName();
+                interfaceName.setvalue(className);
+                sbbUsageParametersInterface.setSbbUsageParametersInterfaceName(interfaceName);
                 sbbClasses.setSbbUsageParametersInterface(sbbUsageParametersInterface);
             }
         }
