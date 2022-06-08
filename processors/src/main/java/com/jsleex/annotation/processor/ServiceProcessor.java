@@ -69,7 +69,7 @@ public class ServiceProcessor extends AbstractProcessor {
                     serviceVendor.setvalue(serviceAnnotation.vendor());
                     service.setServiceVendor(serviceVendor);
                     ServiceVersion serviceVersion = objectFactory.createServiceVersion();
-                    serviceVersion.setvalue(serviceAnnotation.vendor());
+                    serviceVersion.setvalue(serviceAnnotation.version());
                     service.setServiceVersion(serviceVersion);
                     serviceXml.getService().add(service);
 

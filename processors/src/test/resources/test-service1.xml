@@ -4,7 +4,7 @@
     <service>
         <service-name>Test</service-name>
         <service-vendor>Test</service-vendor>
-        <service-version>Test</service-version>
+        <service-version>1.0</service-version>
         <root-sbb>
             <sbb-name>Test</sbb-name>
             <sbb-vendor>Test</sbb-vendor>
@@ -15,7 +15,7 @@
     <service>
         <service-name>Test2</service-name>
         <service-vendor>Test</service-vendor>
-        <service-version>Test</service-version>
+        <service-version>1.0</service-version>
         <root-sbb>
             <sbb-name>Test2</sbb-name>
             <sbb-vendor>Test</sbb-vendor>
