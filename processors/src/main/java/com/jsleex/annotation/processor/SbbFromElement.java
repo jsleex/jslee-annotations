@@ -1,7 +1,11 @@
+/*
+ * JSLEE Annotations
+ * Copyright (c) 2015-2022 Piotr Grabowski, All rights reserved.
+ */
+
 package com.jsleex.annotation.processor;
 
-import com.jsleex.annotation.processor.xml.common.*;
-import com.jsleex.annotation.processor.xml.sbb.*;
+import org.w3c.dom.Document;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
@@ -14,113 +18,120 @@ import javax.tools.Diagnostic;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SbbFromElement implements XmlFromElement<Sbb, com.jsleex.annotation.Sbb>{
+public class SbbFromElement implements XmlFromElement {
     private final ProcessingEnvironment processingEnv;
+    private final Document doc;
 
-    public SbbFromElement(ProcessingEnvironment annotationFinder) {
+    public SbbFromElement(ProcessingEnvironment annotationFinder, Document doc) {
         this.processingEnv = annotationFinder;
+        this.doc = doc;
     }
 
     @Override
-    public List<Sbb> generate(Element element) {
-        List<Sbb> sbbs = new LinkedList<>();
+    public List<org.w3c.dom.Element> generate(Element element) {
+        List<org.w3c.dom.Element> sbbs = new LinkedList<>();
         if (element.getKind().isClass() && element.getModifiers().contains(Modifier.ABSTRACT)) {
             com.jsleex.annotation.Sbb sbbAnnotation = element.getAnnotation(com.jsleex.annotation.Sbb.class);
-            final Sbb sbb = new Sbb();
-            fillInSbbComponentName(sbbAnnotation, sbb);
-            fillInLibraryRefs(element, sbb);
-            fillInSbbRefs(element, sbb);
-            fillInProfileRefs(element, sbb);
-            fillInSbbClasses(element, sbbAnnotation, sbb);
-            fillInAddressProfileRef(sbbAnnotation, sbb);
-            fillInEvents(element, sbb);
-            fillInAciAttributeAliases(element, sbb);
-            fillInEnvEntries(element, sbb);
-            fillInRaBindings(element, sbb);
-            fillInEjbRefs(element, sbb);
+            org.w3c.dom.Element sbbElement = doc.createElement("sbb");
+            fillInSbbComponentName(sbbAnnotation, sbbElement);
+            fillInLibraryRefs(element, sbbElement);
+            fillInSbbRefs(element, sbbElement);
+            fillInProfileRefs(element, sbbElement);
+            fillInSbbClasses(element, sbbAnnotation, sbbElement);
+            fillInAddressProfileRef(sbbAnnotation, sbbElement);
+            fillInEvents(element, sbbElement);
+            fillInAciAttributeAliases(element, sbbElement);
+            fillInEnvEntries(element, sbbElement);
+            fillInRaBindings(element, sbbElement);
+            fillInEjbRefs(element, sbbElement);
 
-            sbbs.add(sbb);
+            sbbs.add(sbbElement);
         } else {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, element.getSimpleName() + " contains com.jsleex.annotation.Sbb annotation but it's not an abstract class.");
         }
         return sbbs;
     }
 
-    private void fillInAciAttributeAliases(Element element, Sbb sbb) {
-        final AciAttributeAliasFromElement aciAttributeAliasFromElement = new AciAttributeAliasFromElement(processingEnv);
-        sbb.getActivityContextAttributeAlias().addAll(aciAttributeAliasFromElement.generate(element));
+    private void fillInAciAttributeAliases(Element element, org.w3c.dom.Element sbb) {
+        final AciAttributeAliasFromElement aciAttributeAliasFromElement = new AciAttributeAliasFromElement(processingEnv, doc);
+        addChildElementsGeneratedByXmlFromElement(element, aciAttributeAliasFromElement, sbb);
     }
 
-    private void fillInEjbRefs(Element element, Sbb sbb) {
-        final EjbRefsFromElement ejbRefsFromElement = new EjbRefsFromElement(processingEnv);
-        sbb.getEjbRef().addAll(ejbRefsFromElement.generate(element));
+    private static void addChildElementsGeneratedByXmlFromElement(Element processedAnnotation, XmlFromElement xmlFromElementProcessor, org.w3c.dom.Element xmlElement) {
+        for (org.w3c.dom.Element elementXml : xmlFromElementProcessor.generate(processedAnnotation)) {
+            xmlElement.appendChild(elementXml);
+        }
     }
 
-    private void fillInRaBindings(Element element, Sbb sbb) {
-        final ResourceAdaptorTypeRefsFromElement resourceAdaptorTypeRefsFromElement = new ResourceAdaptorTypeRefsFromElement(processingEnv);
-        sbb.getResourceAdaptorTypeBinding().addAll(resourceAdaptorTypeRefsFromElement.generate(element));
+    private void fillInEjbRefs(Element element, org.w3c.dom.Element sbb) {
+        final EjbRefsFromElement ejbRefsFromElement = new EjbRefsFromElement(processingEnv, doc);
+        addChildElementsGeneratedByXmlFromElement(element, ejbRefsFromElement, sbb);
     }
 
-    private void fillInAddressProfileRef(com.jsleex.annotation.Sbb sbbAnnotation, Sbb sbb) {
+    private void fillInRaBindings(Element element, org.w3c.dom.Element sbb) {
+        final ResourceAdaptorTypeRefsFromElement resourceAdaptorTypeRefsFromElement = new ResourceAdaptorTypeRefsFromElement(processingEnv, doc);
+        addChildElementsGeneratedByXmlFromElement(element, resourceAdaptorTypeRefsFromElement, sbb);
+    }
+
+    private void fillInAddressProfileRef(com.jsleex.annotation.Sbb sbbAnnotation, org.w3c.dom.Element sbb) {
         if (!sbbAnnotation.addressProfileSpecAliasRef().isEmpty()) {
-            final AddressProfileSpecAliasRef addressProfileSpecAliasRef = new AddressProfileSpecAliasRef();
-            addressProfileSpecAliasRef.setvalue(sbbAnnotation.addressProfileSpecAliasRef());
-            sbb.setAddressProfileSpecAliasRef(addressProfileSpecAliasRef);
+            final org.w3c.dom.Element addressProfileSpecAliasRef = doc.createElement("address-profile-spec-alias-ref");
+            addressProfileSpecAliasRef.setTextContent(sbbAnnotation.addressProfileSpecAliasRef());
+            sbb.appendChild(addressProfileSpecAliasRef);
         }
     }
 
-    private void fillInLibraryRefs(Element element, Sbb sbb) {
-        final LibraryRefsFromElement libraryRefsFromElement = new LibraryRefsFromElement(processingEnv);
-        sbb.getLibraryRef().addAll(libraryRefsFromElement.generate(element));
+    private void fillInLibraryRefs(Element element, org.w3c.dom.Element sbb) {
+        final LibraryRefsFromElement libraryRefsFromElement = new LibraryRefsFromElement(processingEnv, doc);
+        addChildElementsGeneratedByXmlFromElement(element, libraryRefsFromElement, sbb);
     }
 
-    private void fillInEvents(Element element, Sbb sbb) {
-        final EventsFromElement profileSpecRefFromElement = new EventsFromElement(processingEnv);
-        sbb.getEvent().addAll(profileSpecRefFromElement.generate(element));
-
+    private void fillInEvents(Element element, org.w3c.dom.Element sbb) {
+        final EventsFromElement eventsFromElement = new EventsFromElement(processingEnv, doc);
+        addChildElementsGeneratedByXmlFromElement(element, eventsFromElement, sbb);
     }
 
-    private void fillInProfileRefs(Element element, Sbb sbb) {
-        final ProfileSpecRefFromElement profileSpecRefFromElement = new ProfileSpecRefFromElement(processingEnv);
-        sbb.getProfileSpecRef().addAll(profileSpecRefFromElement.generate(element));
+    private void fillInProfileRefs(Element element, org.w3c.dom.Element sbb) {
+        final ProfileSpecRefFromElement profileSpecRefFromElement = new ProfileSpecRefFromElement(processingEnv, doc);
+        addChildElementsGeneratedByXmlFromElement(element, profileSpecRefFromElement, sbb);
     }
 
-    private void fillInEnvEntries(Element element, Sbb sbb) {
-        final EnvEntriesFromElement envEntriesFromElement = new EnvEntriesFromElement(new AnnotationFinder(processingEnv.getTypeUtils()));
-        sbb.getEnvEntry().addAll(envEntriesFromElement.generate(element));
+    private void fillInEnvEntries(Element element, org.w3c.dom.Element sbb) {
+        final EnvEntriesFromElement envEntriesFromElement = new EnvEntriesFromElement(new AnnotationFinder(processingEnv.getTypeUtils()), doc);
+        addChildElementsGeneratedByXmlFromElement(element, envEntriesFromElement, sbb);
     }
 
-    private void fillInSbbRefs(Element element, Sbb sbb) {
-        final List<SbbRef> sbbRefs = new LinkedList<>();
+    private void fillInSbbRefs(Element element, org.w3c.dom.Element sbb) {
         for (com.jsleex.annotation.SbbRef sbbRefAnnotation : element.getAnnotationsByType(com.jsleex.annotation.SbbRef.class)) {
-            final SbbRef sbbRef = new SbbRef();
-            final SbbAlias sbbAlias = new SbbAlias();
-            sbbAlias.setvalue(sbbRefAnnotation.alias());
-            sbbRef.setSbbAlias(sbbAlias);
-            final SbbName sbbName = new SbbName();
-            sbbName.setvalue(sbbRefAnnotation.name());
-            sbbRef.setSbbName(sbbName);
-            final SbbVendor sbbVendor = new SbbVendor();
-            sbbVendor.setvalue(sbbRefAnnotation.vendor());
-            sbbRef.setSbbVendor(sbbVendor);
-            final SbbVersion sbbVersion = new SbbVersion();
-            sbbVersion.setvalue(sbbRefAnnotation.version());
-            sbbRef.setSbbVersion(sbbVersion);
-            sbbRefs.add(sbbRef);
+            final org.w3c.dom.Element sbbRef = doc.createElement("sbb-ref");
+            final org.w3c.dom.Element sbbName = doc.createElement("sbb-name");
+            sbbName.setTextContent(sbbRefAnnotation.name());
+            sbbRef.appendChild(sbbName);
+            final org.w3c.dom.Element sbbVendor = doc.createElement("sbb-vendor");
+            sbbVendor.setTextContent(sbbRefAnnotation.vendor());
+            sbbRef.appendChild(sbbVendor);
+            final org.w3c.dom.Element sbbVersion = doc.createElement("sbb-version");
+            sbbVersion.setTextContent(sbbRefAnnotation.version());
+            sbbRef.appendChild(sbbVersion);
+            final org.w3c.dom.Element sbbAlias = doc.createElement("sbb-alias");
+            sbbAlias.setTextContent(sbbRefAnnotation.alias());
+            sbbRef.appendChild(sbbAlias);
+            sbb.appendChild(sbbRef);
         }
-        sbb.getSbbRef().addAll(sbbRefs);
     }
 
-    private void fillInSbbClasses(Element element, com.jsleex.annotation.Sbb sbbAnnotation, Sbb sbb) {
-        final SbbClasses sbbClasses = new SbbClasses();
+//<!ELEMENT sbb-classes (description?, sbb-abstract-class, sbb-local-interface?,
+//                       sbb-activity-context-interface?, sbb-usage-parameters-interface?)>
+    private void fillInSbbClasses(Element element, com.jsleex.annotation.Sbb sbbAnnotation, org.w3c.dom.Element sbb) {
+        final org.w3c.dom.Element sbbClasses = doc.createElement("sbb-classes");
         fillInSbbAbstractClass(element, sbbAnnotation, sbbClasses);
         fillInSbbLocalInterface(sbbAnnotation, sbbClasses);
         fillInSbbUsageParametersInterface(sbbAnnotation, sbbClasses);
         fillInSbbActivityContextInterface(sbbAnnotation, sbbClasses);
-        sbb.setSbbClasses(sbbClasses);
+        sbb.appendChild(sbbClasses);
     }
 
-    private void fillInSbbActivityContextInterface(com.jsleex.annotation.Sbb sbbAnnotation, SbbClasses sbbClasses) {
+    private void fillInSbbActivityContextInterface(com.jsleex.annotation.Sbb sbbAnnotation, org.w3c.dom.Element sbbClasses) {
         //ugly
         try {
             sbbAnnotation.sbbActivityContextInterfaceName();
@@ -128,48 +139,48 @@ public class SbbFromElement implements XmlFromElement<Sbb, com.jsleex.annotation
             final TypeMirror typeMirror = mte.getTypeMirror();
             final String className = typeMirror.toString();
             if (!className.equals(ActivityContextInterface.class.getCanonicalName())) {
-                final SbbActivityContextInterface sbbActivityContextInterface = new SbbActivityContextInterface();
-                final SbbActivityContextInterfaceName sbbActivityContextInterfaceName = new SbbActivityContextInterfaceName();
-                sbbActivityContextInterfaceName.setvalue(className);
-                sbbActivityContextInterface.setSbbActivityContextInterfaceName(sbbActivityContextInterfaceName);
-                final Description description = new Description();
-                description.setvalue(sbbAnnotation.sbbActivityContextInterfaceDescription());
-                sbbActivityContextInterface.setDescription(description);
-                sbbClasses.setSbbActivityContextInterface(sbbActivityContextInterface);
+                final org.w3c.dom.Element sbbActivityContextInterface = doc.createElement("sbb-activity-context-interface");
+                final org.w3c.dom.Element description = doc.createElement("description");
+                description.setTextContent(sbbAnnotation.sbbActivityContextInterfaceDescription());
+                sbbActivityContextInterface.appendChild(description);
+                final org.w3c.dom.Element sbbActivityContextInterfaceName = doc.createElement("sbb-activity-context-interface-name");
+                sbbActivityContextInterfaceName.setTextContent(className);
+                sbbActivityContextInterface.appendChild(sbbActivityContextInterfaceName);
+                sbbClasses.appendChild(sbbActivityContextInterface);
             }
         }
     }
 
-    private void fillInSbbAbstractClass(Element element, com.jsleex.annotation.Sbb sbbAnnotation, SbbClasses sbbClasses) {
-        final SbbAbstractClass sbbAbstractClass = new SbbAbstractClass();
-        final SbbAbstractClassName sbbAbstractClassName = new SbbAbstractClassName();
-        sbbAbstractClassName.setvalue(element.toString());
-        sbbAbstractClass.setSbbAbstractClassName(sbbAbstractClassName);
+    private void fillInSbbAbstractClass(Element element, com.jsleex.annotation.Sbb sbbAnnotation, org.w3c.dom.Element sbbClasses) {
+        final org.w3c.dom.Element sbbAbstractClass = doc.createElement("sbb-abstract-class");
+        final org.w3c.dom.Element sbbAbstractClassName = doc.createElement("sbb-abstract-class-name");
+        sbbAbstractClassName.setTextContent(element.toString());
+        sbbAbstractClass.appendChild(sbbAbstractClassName);
         if (sbbAnnotation.reentrant()) {
-            sbbAbstractClass.setReentrant("True");
+            sbbAbstractClass.setAttribute("reentrant", "True");
         }
-        final CmpFromElement cmpFromElement = new CmpFromElement(processingEnv);
-        sbbAbstractClass.getCmpField().addAll(cmpFromElement.generate(element));
-        final ChildRelationFromElement childRelationFromElement = new ChildRelationFromElement(processingEnv);
-        sbbAbstractClass.getGetChildRelationMethod().addAll(childRelationFromElement.generate(element));
-        final ProfileCmpFromElement profileCmpFromElement = new ProfileCmpFromElement(processingEnv);
-        sbbAbstractClass.getGetProfileCmpMethod().addAll(profileCmpFromElement.generate(element));
-        sbbClasses.setSbbAbstractClass(sbbAbstractClass);
+        final CmpFromElement cmpFromElement = new CmpFromElement(processingEnv, doc);
+        addChildElementsGeneratedByXmlFromElement(element, cmpFromElement, sbbAbstractClass);
+        final ChildRelationFromElement childRelationFromElement = new ChildRelationFromElement(processingEnv, doc);
+        addChildElementsGeneratedByXmlFromElement(element, childRelationFromElement, sbbAbstractClass);
+        final ProfileCmpFromElement profileCmpFromElement = new ProfileCmpFromElement(processingEnv, doc);
+        addChildElementsGeneratedByXmlFromElement(element, profileCmpFromElement, sbbAbstractClass);
+        sbbClasses.appendChild(sbbAbstractClass);
     }
 
-    private void fillInSbbComponentName(com.jsleex.annotation.Sbb sbbAnnotation, Sbb sbb) {
-        final SbbName sbbName = new SbbName();
-        sbbName.setvalue(sbbAnnotation.name());
-        sbb.setSbbName(sbbName);
-        final SbbVendor sbbVendor = new SbbVendor();
-        sbbVendor.setvalue(sbbAnnotation.vendor());
-        sbb.setSbbVendor(sbbVendor);
-        final SbbVersion sbbVersion = new SbbVersion();
-        sbbVersion.setvalue(sbbAnnotation.version());
-        sbb.setSbbVersion(sbbVersion);
+    private void fillInSbbComponentName(com.jsleex.annotation.Sbb sbbAnnotation, org.w3c.dom.Element sbb) {
+        final org.w3c.dom.Element sbbName = doc.createElement("sbb-name");
+        sbbName.setTextContent(sbbAnnotation.name());
+        sbb.appendChild(sbbName);
+        final org.w3c.dom.Element sbbVendor = doc.createElement("sbb-vendor");
+        sbbVendor.setTextContent(sbbAnnotation.vendor());
+        sbb.appendChild(sbbVendor);
+        final org.w3c.dom.Element sbbVersion = doc.createElement("sbb-version");
+        sbbVersion.setTextContent(sbbAnnotation.version());
+        sbb.appendChild(sbbVersion);
     }
 
-    private void fillInSbbUsageParametersInterface(com.jsleex.annotation.Sbb sbbAnnotation, SbbClasses sbbClasses) {
+    private void fillInSbbUsageParametersInterface(com.jsleex.annotation.Sbb sbbAnnotation, org.w3c.dom.Element sbbClasses) {
         //ugly
         try {
             sbbAnnotation.sbbUsageParameterInterfaceName();
@@ -177,17 +188,17 @@ public class SbbFromElement implements XmlFromElement<Sbb, com.jsleex.annotation
             final TypeMirror typeMirror = mte.getTypeMirror();
             final String className = typeMirror.toString();
             if (!className.equals(void.class.getCanonicalName())) {
-                final SbbUsageParametersInterface sbbUsageParametersInterface = new SbbUsageParametersInterface();
+                final org.w3c.dom.Element sbbUsageParametersInterface = doc.createElement("sbb-usage-parameters-interface");
                 //todo separate usage parameters
-                SbbUsageParametersInterfaceName interfaceName = new SbbUsageParametersInterfaceName();
-                interfaceName.setvalue(className);
-                sbbUsageParametersInterface.setSbbUsageParametersInterfaceName(interfaceName);
-                sbbClasses.setSbbUsageParametersInterface(sbbUsageParametersInterface);
+                final org.w3c.dom.Element interfaceName = doc.createElement("sbb-usage-parameters-interface-name");
+                interfaceName.setTextContent(className);
+                sbbUsageParametersInterface.appendChild(interfaceName);
+                sbbClasses.appendChild(sbbUsageParametersInterface);
             }
         }
     }
 
-    private void fillInSbbLocalInterface(com.jsleex.annotation.Sbb sbbAnnotation, SbbClasses sbbClasses) {
+    private void fillInSbbLocalInterface(com.jsleex.annotation.Sbb sbbAnnotation, org.w3c.dom.Element sbbClasses) {
         //ugly
         try {
             sbbAnnotation.sbbLocalInterfaceName();
@@ -195,11 +206,11 @@ public class SbbFromElement implements XmlFromElement<Sbb, com.jsleex.annotation
             final TypeMirror typeMirror = mte.getTypeMirror();
             final String className = typeMirror.toString();
             if (!SbbLocalObject.class.getCanonicalName().equals(className)) {
-                final SbbLocalInterface sbbLocalInterface = new SbbLocalInterface();
-                final SbbLocalInterfaceName sbbLocalInterfaceName = new SbbLocalInterfaceName();
-                sbbLocalInterfaceName.setvalue(className);
-                sbbLocalInterface.setSbbLocalInterfaceName(sbbLocalInterfaceName);
-                sbbClasses.setSbbLocalInterface(sbbLocalInterface);
+                final org.w3c.dom.Element sbbLocalInterface = doc.createElement("sbb-local-interface");
+                final org.w3c.dom.Element sbbLocalInterfaceName = doc.createElement("sbb-local-interface-name");
+                sbbLocalInterfaceName.setTextContent(className);
+                sbbLocalInterface.appendChild(sbbLocalInterfaceName);
+                sbbClasses.appendChild(sbbLocalInterface);
             }
         }
     }

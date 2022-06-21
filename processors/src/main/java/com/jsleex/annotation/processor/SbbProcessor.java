@@ -1,33 +1,21 @@
 /*
  * JSLEE Annotations
- * Copyright (c) 2015 Piotr Grabowski, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * Copyright (c) 2015-2022 Piotr Grabowski, All rights reserved.
  */
 
 package com.jsleex.annotation.processor;
 
-import com.jsleex.annotation.processor.xml.common.SecurityPermissionSpec;
-import com.jsleex.annotation.processor.xml.common.SecurityPermissions;
-import com.jsleex.annotation.processor.xml.sbb.*;
-import jakarta.xml.bind.JAXBException;
+import org.w3c.dom.Document;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.util.Set;
 
@@ -35,15 +23,19 @@ import java.util.Set;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class SbbProcessor extends AbstractProcessor {
     private static final String OUTPUT_FILE = "META-INF/sbb-jar.xml";
-    private static final String DOCTYPE = "<!DOCTYPE sbb-jar PUBLIC \"-//Sun Microsystems, Inc.//DTD JAIN SLEE SBB 1.1//EN\" \"http://java.sun.com/dtd/slee-sbb-jar_1_1.dtd\">\n";
-    private XmlFileWriter<SbbJar> xmlWriter;
+    private static final String DOCTYPE_PUBLIC = "-//Sun Microsystems, Inc.//DTD JAIN SLEE SBB 1.1//EN";
+    private static final String DOCTYPE_SYSTEM = "http://java.sun.com/dtd/slee-sbb-jar_1_1.dtd";
+    private XmlFileWriter xmlWriter;
+    private DocumentBuilder builder;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         try {
-            this.xmlWriter = new XmlFileWriter<>(SbbJar.class, OUTPUT_FILE, DOCTYPE);
-        } catch (JSleeXProcessorException e) {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            this.builder = factory.newDocumentBuilder();
+            this.xmlWriter = new XmlFileWriter(OUTPUT_FILE, DOCTYPE_PUBLIC, DOCTYPE_SYSTEM);
+        } catch (JSleeXProcessorException | ParserConfigurationException e) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Unable to initialize processor.");
             throw new RuntimeException(e);
         }
@@ -51,21 +43,28 @@ public class SbbProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        final SbbJar sbbJar = new SbbJar();
+        final Document doc = builder.newDocument();
+        final org.w3c.dom.Element sbbJarElement = doc.createElement("sbb-jar");
+        doc.appendChild(sbbJarElement);
         for (TypeElement typeElement : annotations) {
             final Set<? extends Element> elementSet = roundEnv.getElementsAnnotatedWith(typeElement);
             for (Element element : elementSet) {
-                sbbJar.getSbb().addAll(new SbbFromElement(processingEnv).generate(element));
+                for (org.w3c.dom.Element sbbElement : new SbbFromElement(processingEnv, doc).generate(element)) {
+                    sbbJarElement.appendChild(sbbElement);
+                }
             }
         }
         for (TypeElement typeElement : annotations) {
             final Set<? extends Element> elementSet = roundEnv.getElementsAnnotatedWith(typeElement);
-            sbbJar.setSecurityPermissions(SecurityPermissionsFromElements.generate(elementSet));
+            final org.w3c.dom.Element element = SecurityPermissionsFromElements.generate(elementSet, doc);
+            if (element != null) {
+                sbbJarElement.appendChild(element);
+            }
         }
-        if (!sbbJar.getSbb().isEmpty()) {
+        if (sbbJarElement.hasChildNodes()) {
             try {
-                xmlWriter.write(processingEnv.getFiler(), sbbJar);
-            } catch (IOException | JAXBException e) {
+                xmlWriter.write(processingEnv.getFiler(), doc);
+            } catch (IOException | TransformerException e) {
                 throw new RuntimeException(e);
             }
         }

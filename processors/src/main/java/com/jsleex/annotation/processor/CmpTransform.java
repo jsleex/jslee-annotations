@@ -1,9 +1,12 @@
+/*
+ * JSLEE Annotations
+ * Copyright (c) 2015-2022 Piotr Grabowski, All rights reserved.
+ */
+
 package com.jsleex.annotation.processor;
 
 import com.jsleex.annotation.CmpMethod;
-import com.jsleex.annotation.processor.xml.sbb.CmpField;
-import com.jsleex.annotation.processor.xml.sbb.CmpFieldName;
-import com.jsleex.annotation.processor.xml.sbb.SbbAliasRef;
+import org.w3c.dom.Document;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -15,23 +18,23 @@ final class CmpTransform {
         //empty
     }
 
-    static public Optional<CmpField> toXml(CmpMethod cmpMethod, Element element) {
+    static public Optional<org.w3c.dom.Element> toXml(CmpMethod cmpMethod, Element element, Document doc) {
         if (ElementKind.METHOD.equals(element.getKind())) {
             if (element.getSimpleName().toString().startsWith("get") || element.getSimpleName().toString().startsWith("set")) {
-                final CmpField cmpField = new CmpField();
-                final CmpFieldName cmpFieldName = new CmpFieldName();
+                final org.w3c.dom.Element cmpField = doc.createElement("cmp-field");
+                final org.w3c.dom.Element cmpFieldName = doc.createElement("cmp-field-name");
                 // remove "set" or "get" prefix
                 String s = element.getSimpleName().toString().substring(3);
                 // change first letter to lower case
-                final char c[] = s.toCharArray();
+                final char[] c = s.toCharArray();
                 c[0] = Character.toLowerCase(c[0]);
                 s = new String(c);
-                cmpFieldName.setvalue(s);
-                cmpField.setCmpFieldName(cmpFieldName);
+                cmpFieldName.setTextContent(s);
+                cmpField.appendChild(cmpFieldName);
                 if (!cmpMethod.sbbAliasRef().isEmpty()) {
-                    SbbAliasRef sbbAliasRef = new SbbAliasRef();
-                    sbbAliasRef.setvalue(cmpMethod.sbbAliasRef());
-                    cmpField.setSbbAliasRef(sbbAliasRef);
+                    org.w3c.dom.Element sbbAliasRef = doc.createElement("sbb-alias-ref");
+                    sbbAliasRef.setTextContent(cmpMethod.sbbAliasRef());
+                    cmpField.appendChild(sbbAliasRef);
                 }
                 return Optional.of(cmpField);
             }

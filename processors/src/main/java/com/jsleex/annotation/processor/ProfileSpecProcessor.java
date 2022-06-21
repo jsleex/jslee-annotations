@@ -1,25 +1,9 @@
 /*
  * JSLEE Annotations
- * Copyright (c) 2015 Piotr Grabowski, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * Copyright (c) 2015-2022 Piotr Grabowski, All rights reserved.
  */
 
 package com.jsleex.annotation.processor;
-
-import com.jsleex.annotation.processor.xml.common.*;
-import com.jsleex.annotation.processor.xml.profile.*;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -28,7 +12,13 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
-import jakarta.xml.bind.JAXBException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+
+import org.w3c.dom.Document;
+
 import java.io.IOException;
 import java.util.Set;
 
@@ -36,14 +26,11 @@ import java.util.Set;
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class ProfileSpecProcessor extends AbstractProcessor {
     private static final String OUTPUT_FILENAME = "META-INF/profile-spec-jar.xml";
-    private static final String DOCTYPE = "<!DOCTYPE profile-spec-jar PUBLIC \"-//Sun Microsystems, Inc.//DTD JAIN SLEE Profile Specification 1.1//EN\""
-            + " \"http://java.sun.com/dtd/slee-profile-spec-jar_1_1.dtd\">\n";
-    private ProfileSpecJar profileSpecJar;
-    private XmlFileWriter<ProfileSpecJar> xmlWriter;
-    private AnnotationFinder annotationFinder;
-    private ObjectFactory objectFactory = new ObjectFactory();
+    private static final String DOCTYPE_PUBLIC = "-//Sun Microsystems, Inc.//DTD JAIN SLEE Profile Specification 1.1//EN";
+    private static final String DOCTYPE_SYSTEM = "http://java.sun.com/dtd/slee-profile-spec-jar_1_1.dtd";
+    private XmlFileWriter xmlWriter;
 
-    private boolean isProfileSpecCreated;
+    private DocumentBuilder builder;
 
     public ProfileSpecProcessor() {
     }
@@ -52,9 +39,10 @@ public class ProfileSpecProcessor extends AbstractProcessor {
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         try {
-            this.xmlWriter = new XmlFileWriter<>(ProfileSpecJar.class, OUTPUT_FILENAME, DOCTYPE);
-            this.profileSpecJar = objectFactory.createProfileSpecJar();
-        } catch (JSleeXProcessorException e) {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            this.builder = factory.newDocumentBuilder();
+            this.xmlWriter = new XmlFileWriter(OUTPUT_FILENAME, DOCTYPE_PUBLIC, DOCTYPE_SYSTEM);
+        } catch (JSleeXProcessorException | ParserConfigurationException e) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Unable to initialize processor.");
             throw new RuntimeException(e);
         }
@@ -62,36 +50,46 @@ public class ProfileSpecProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        annotationFinder = new AnnotationFinder(processingEnv.getTypeUtils());
+        final Document doc = builder.newDocument();
+        final org.w3c.dom.Element profileSpecJarElement = doc.createElement("profile-spec-jar");
+        doc.appendChild(profileSpecJarElement);
+        AnnotationFinder annotationFinder = new AnnotationFinder(processingEnv.getTypeUtils());
         for (TypeElement typeElement : annotations) {
             Set<? extends Element> elementSet = roundEnv.getElementsAnnotatedWith(typeElement);
             for (Element element : elementSet) {
                 if (element.getKind().isClass() || element.getKind().isInterface()) {
                     com.jsleex.annotation.ProfileSpec profileSpecAnn = element.getAnnotation(com.jsleex.annotation.ProfileSpec.class);
-
-                    ProfileSpec profileSpec = objectFactory.createProfileSpec();
-
+                    org.w3c.dom.Element profileSpec = doc.createElement("profile-spec");
                     if (!profileSpecAnn.description().isEmpty()) {
-                        Description description = objectFactory.createDescription();
-                        description.setvalue(profileSpecAnn.description());
-                        profileSpec.setDescription(description);
+                        org.w3c.dom.Element description = doc.createElement("description");
+                        description.setTextContent(profileSpecAnn.description());
+                        profileSpec.appendChild(description);
                     }
-                    ProfileSpecName profileName = objectFactory.createProfileSpecName();
-                    profileName.setvalue(profileSpecAnn.name());
-                    profileSpec.setProfileSpecName(profileName);
-                    ProfileSpecVendor profileVendor = objectFactory.createProfileSpecVendor();
-                    profileVendor.setvalue(profileSpecAnn.vendor());
-                    profileSpec.setProfileSpecVendor(profileVendor);
-                    ProfileSpecVersion profileVersion = objectFactory.createProfileSpecVersion();
-                    profileVersion.setvalue(profileSpecAnn.version());
-                    profileSpec.setProfileSpecVersion(profileVersion);
-
-                    ProfileClasses profileClasses = objectFactory.createProfileClasses();
-                    ProfileCmpInterface profileCmpInterface = objectFactory.createProfileCmpInterface();
-                    ProfileCmpInterfaceName profileCmpInterfaceName = objectFactory.createProfileCmpInterfaceName();
-                    profileCmpInterfaceName.setvalue(element.toString());
-                    profileCmpInterface.setProfileCmpInterfaceName(profileCmpInterfaceName);
-                    profileClasses.setProfileCmpInterface(profileCmpInterface);
+                    org.w3c.dom.Element profileName = doc.createElement("profile-spec-name");
+                    profileName.setTextContent(profileSpecAnn.name());
+                    profileSpec.appendChild(profileName);
+                    org.w3c.dom.Element profileVendor = doc.createElement("profile-spec-vendor");
+                    profileVendor.setTextContent(profileSpecAnn.vendor());
+                    profileSpec.appendChild(profileVendor);
+                    org.w3c.dom.Element profileVersion = doc.createElement("profile-spec-version");
+                    profileVersion.setTextContent(profileSpecAnn.version());
+                    profileSpec.appendChild(profileVersion);
+                    final LibraryRefsFromElement libraryRefsFromElement = new LibraryRefsFromElement(processingEnv, doc);
+                    for (org.w3c.dom.Element libRefXmlElement: libraryRefsFromElement.generate(element)) {
+                        profileSpec.appendChild(libRefXmlElement);
+                    }
+                    final ProfileSpecRefFromElement profileRefsFromElement = new ProfileSpecRefFromElement(processingEnv, doc);
+                    for (org.w3c.dom.Element profRefXmlElement: profileRefsFromElement.generate(element)) {
+                        profileSpec.appendChild(profRefXmlElement);
+                    }
+                    //todo collator
+                    org.w3c.dom.Element profileClasses = doc.createElement("profile-classes");
+                    org.w3c.dom.Element profileCmpInterface = doc.createElement("profile-cmp-interface");
+                    org.w3c.dom.Element profileCmpInterfaceName = doc.createElement("profile-cmp-interface-name");
+                    profileCmpInterfaceName.setTextContent(element.toString());
+                    //todo cmp-field
+                    profileCmpInterface.appendChild(profileCmpInterfaceName);
+                    profileClasses.appendChild(profileCmpInterface);
                     //ugly
                     try {
                         profileSpecAnn.profileManagementInterfaceName();
@@ -99,11 +97,11 @@ public class ProfileSpecProcessor extends AbstractProcessor {
                         TypeMirror typeMirror = mte.getTypeMirror();
                         String className = typeMirror.toString();
                         if (!"java.lang.Class".equals(className)) {
-                            ProfileManagementInterface profileManagementInterface = objectFactory.createProfileManagementInterface();
-                            ProfileManagementInterfaceName profileManagementInterfaceName = objectFactory.createProfileManagementInterfaceName();
-                            profileManagementInterfaceName.setvalue(typeMirror.toString());
-                            profileManagementInterface.setProfileManagementInterfaceName(profileManagementInterfaceName);
-                            profileClasses.setProfileManagementInterface(profileManagementInterface);
+                            org.w3c.dom.Element profileManagementInterface = doc.createElement("profile-management-interface");
+                            org.w3c.dom.Element profileManagementInterfaceName = doc.createElement("profile-management-interface-name");
+                            profileManagementInterfaceName.setTextContent(typeMirror.toString());
+                            profileManagementInterface.appendChild(profileManagementInterfaceName);
+                            profileClasses.appendChild(profileManagementInterface);
                         }
                     }
                     //ugly
@@ -113,33 +111,31 @@ public class ProfileSpecProcessor extends AbstractProcessor {
                         TypeMirror typeMirror = mte.getTypeMirror();
                         String className = typeMirror.toString();
                         if (!"java.lang.Class".equals(className)) {
-                            ProfileAbstractClass profileAbstractClass = objectFactory.createProfileAbstractClass();
-                            ProfileAbstractClassName profileAbstractClassName = objectFactory.createProfileAbstractClassName();
-                            profileAbstractClassName.setvalue(typeMirror.toString());
-                            profileAbstractClass.setProfileAbstractClassName(profileAbstractClassName);
-                            profileClasses.setProfileAbstractClass(profileAbstractClass);
+                            org.w3c.dom.Element profileAbstractClass = doc.createElement("profile-abstract-class");
+                            org.w3c.dom.Element profileAbstractClassName = doc.createElement("profile-abstract-class-name");
+                            profileAbstractClassName.setTextContent(typeMirror.toString());
+                            profileAbstractClass.appendChild(profileAbstractClassName);
+                            profileClasses.appendChild(profileAbstractClass);
                         }
                     }
-                    profileSpec.setProfileClasses(profileClasses);
-
-                    profileSpecJar.getProfileSpec().add(profileSpec);
-                    isProfileSpecCreated = true;
-
+                    //todo profile-table-interface, profile-usage-parameters-interface
+                    profileSpec.appendChild(profileClasses);
                     //todo
-                    EnvEntriesFromElement envEntriesFromElement = new EnvEntriesFromElement(annotationFinder);
-                    for (EnvEntry envEntry : envEntriesFromElement.generate(element)) {
-                        profileSpec.getEnvEntry().add(envEntry);
+                    EnvEntriesFromElement envEntriesFromElement = new EnvEntriesFromElement(annotationFinder, doc);
+                    for (org.w3c.dom.Element envEntry : envEntriesFromElement.generate(element)) {
+                        profileSpec.appendChild(envEntry);
                     }
-
+                    //todo query, profile-hints
+                    profileSpecJarElement.appendChild(profileSpec);
                 } else {
                     processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, element.getSimpleName() + " contains jsleeannotations.slee.ProfileSpec(s) annotation but is not class or interface.");
                 }
             }
         }
-        if (roundEnv.processingOver() && isProfileSpecCreated) {
+        if (profileSpecJarElement.hasChildNodes()) {
             try {
-                xmlWriter.write(processingEnv.getFiler(), profileSpecJar);
-            } catch (JAXBException | IOException e) {
+                xmlWriter.write(processingEnv.getFiler(), doc);
+            } catch (IOException | TransformerException e) {
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Unable to write output file: " + OUTPUT_FILENAME);
             }
         }

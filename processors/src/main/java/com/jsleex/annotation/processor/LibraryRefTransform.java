@@ -1,26 +1,30 @@
+/*
+ * JSLEE Annotations
+ * Copyright (c) 2015-2022 Piotr Grabowski, All rights reserved.
+ */
+
 package com.jsleex.annotation.processor;
 
 import com.jsleex.annotation.LibraryRef;
-import com.jsleex.annotation.processor.xml.common.LibraryName;
-import com.jsleex.annotation.processor.xml.common.LibraryVendor;
-import com.jsleex.annotation.processor.xml.common.LibraryVersion;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public class LibraryRefTransform {
     private LibraryRefTransform() {
         //empty
     }
 
-    public static com.jsleex.annotation.processor.xml.common.LibraryRef toXml(LibraryRef profileSpecRef) {
-        final com.jsleex.annotation.processor.xml.common.LibraryRef libraryRefXml = new com.jsleex.annotation.processor.xml.common.LibraryRef();
-        final LibraryName libraryName = new LibraryName();
-        libraryName.setvalue(profileSpecRef.name());
-        libraryRefXml.setLibraryName(libraryName);
-        final LibraryVendor libraryVendor = new LibraryVendor();
-        libraryVendor.setvalue(profileSpecRef.vendor());
-        libraryRefXml.setLibraryVendor(libraryVendor);
-        final LibraryVersion libraryVersion = new LibraryVersion();
-        libraryVersion.setvalue(profileSpecRef.version());
-        libraryRefXml.setLibraryVersion(libraryVersion);
+    public static Element toXml(LibraryRef profileSpecRef, Document doc) {
+        final Element libraryRefXml = doc.createElement("library-ref");
+        final Element libraryName = doc.createElement("library-name");
+        libraryName.setTextContent(profileSpecRef.name());
+        libraryRefXml.appendChild(libraryName);
+        final Element libraryVendor = doc.createElement("library-vendor");
+        libraryVendor.setTextContent(profileSpecRef.vendor());
+        libraryRefXml.appendChild(libraryVendor);
+        final Element libraryVersion = doc.createElement("library-version");
+        libraryVersion.setTextContent(profileSpecRef.version());
+        libraryRefXml.appendChild(libraryVersion);
         return libraryRefXml;
     }
 }

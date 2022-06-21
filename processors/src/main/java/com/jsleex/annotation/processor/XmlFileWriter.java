@@ -1,59 +1,51 @@
 /*
  * JSLEE Annotations
- * Copyright (c) 2015 Piotr Grabowski, All rights reserved.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
+ * Copyright (c) 2015-2022 Piotr Grabowski, All rights reserved.
  */
 
 package com.jsleex.annotation.processor;
 
 import javax.annotation.processing.Filer;
+import javax.annotation.processing.Messager;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Marshaller;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Writer;
 
-class XmlFileWriter<T> {
-    private final String doctype;
-    private final JAXBContext context;
-    private final Marshaller marshaller;
+class XmlFileWriter {
     private final String outputFilename;
+    private final Transformer transformer;
 
-    XmlFileWriter(Class<T> xmlObjectsClass, String outputFilename, String doctype) throws JSleeXProcessorException {
+    XmlFileWriter(String outputFilename, String doctypePublic, String doctypeSystem) throws JSleeXProcessorException {
         try {
-            context = JAXBContext.newInstance(xmlObjectsClass);
-            marshaller = context.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
-            marshaller.setProperty("jaxb.encoding", "UTF-8");
-        } catch (JAXBException e) {
-            throw new JSleeXProcessorException("Unable to initialize JAXB.", e);
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            this.transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+            transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, doctypePublic);
+            transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, doctypeSystem);
+        } catch (TransformerConfigurationException e) {
+            throw new JSleeXProcessorException("Unable to initialize XML writer.", e);
         }
         this.outputFilename = outputFilename;
-        this.doctype = doctype;
     }
 
-    void write(Filer filer, T objectToWrite) throws IOException, JAXBException {
-        FileObject fileObject = filer.createResource(StandardLocation.CLASS_OUTPUT, "", outputFilename);
-        try (Writer writer = fileObject.openWriter()) {
-            writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + doctype);
-            marshaller.marshal(objectToWrite, writer);
-            marshaller.marshal(objectToWrite, System.out);
+    void write(Filer filer, Document doc) throws TransformerException, IOException {
+        final FileObject fileObject = filer.createResource(StandardLocation.CLASS_OUTPUT, "", outputFilename);
+        try (final Writer writer = fileObject.openWriter()) {
+            doc.setXmlStandalone(true);
+            final DOMSource source = new DOMSource(doc);
+            final StreamResult result = new StreamResult(writer);
+            transformer.transform(source, result);
         }
     }
 }

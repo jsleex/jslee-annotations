@@ -1,31 +1,34 @@
+/*
+ * JSLEE Annotations
+ * Copyright (c) 2015-2022 Piotr Grabowski, All rights reserved.
+ */
+
 package com.jsleex.annotation.processor;
 
 import com.jsleex.annotation.ProfileSpecRef;
-import com.jsleex.annotation.processor.xml.sbb.ProfileSpecAlias;
-import com.jsleex.annotation.processor.xml.common.ProfileSpecName;
-import com.jsleex.annotation.processor.xml.common.ProfileSpecVendor;
-import com.jsleex.annotation.processor.xml.common.ProfileSpecVersion;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public final class ProfileSpecRefTransform {
     private ProfileSpecRefTransform() {
         //empty
     }
 
-    public static com.jsleex.annotation.processor.xml.sbb.ProfileSpecRef toXml(ProfileSpecRef profileSpecRef) {
-        com.jsleex.annotation.processor.xml.sbb.ProfileSpecRef profileSpecRefXml = new com.jsleex.annotation.processor.xml.sbb.ProfileSpecRef();
-        final ProfileSpecName profileSpecName = new ProfileSpecName();
-        profileSpecName.setvalue(profileSpecRef.profileSpecName());
-        profileSpecRefXml.setProfileSpecName(profileSpecName);
-        final ProfileSpecVendor profileSpecVendor = new ProfileSpecVendor();
-        profileSpecVendor.setvalue(profileSpecRef.profileSpecVendor());
-        profileSpecRefXml.setProfileSpecVendor(profileSpecVendor);
-        final ProfileSpecVersion profileSpecVersion = new ProfileSpecVersion();
-        profileSpecVersion.setvalue(profileSpecRef.profileSpecVersion());
-        profileSpecRefXml.setProfileSpecVersion(profileSpecVersion);
+    public static Element toXml(ProfileSpecRef profileSpecRef, Document doc) {
+        final Element profileSpecRefXml = doc.createElement("profile-spec-ref");
+        final Element profileSpecName = doc.createElement("profile-spec-name");
+        profileSpecName.setTextContent(profileSpecRef.profileSpecName());
+        profileSpecRefXml.appendChild(profileSpecName);
+        final Element profileSpecVendor = doc.createElement("profile-spec-vendor");
+        profileSpecVendor.setTextContent(profileSpecRef.profileSpecVendor());
+        profileSpecRefXml.appendChild(profileSpecVendor);
+        final Element profileSpecVersion = doc.createElement("profile-spec-version");
+        profileSpecVersion.setTextContent(profileSpecRef.profileSpecVersion());
+        profileSpecRefXml.appendChild(profileSpecVersion);
         if (!profileSpecRef.profileSpecAlias().isEmpty()) {
-            final ProfileSpecAlias profileSpecAlias = new ProfileSpecAlias();
-            profileSpecAlias.setvalue(profileSpecRef.profileSpecAlias());
-            profileSpecRefXml.setProfileSpecAlias(profileSpecAlias);
+            final Element profileSpecAlias = doc.createElement("profile-spec-alias");
+            profileSpecAlias.setTextContent(profileSpecRef.profileSpecAlias());
+            profileSpecRefXml.appendChild(profileSpecAlias);
         }
         return profileSpecRefXml;
     }
