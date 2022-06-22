@@ -35,7 +35,7 @@ public class CmpFromElement implements XmlFromElement {
 
     //this probably can be improved
     static class WrapperForElement {
-        private org.w3c.dom.Element element;
+        private final org.w3c.dom.Element element;
         WrapperForElement(org.w3c.dom.Element element){
             this.element = element;
         }

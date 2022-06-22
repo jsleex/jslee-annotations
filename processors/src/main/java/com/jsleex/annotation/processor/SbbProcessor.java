@@ -21,7 +21,7 @@ import java.util.Set;
 
 @SupportedAnnotationTypes(value = {"com.jsleex.annotation.Sbb"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-public class SbbProcessor extends AbstractProcessor {
+public class SbbProcessor extends JsleeXProcessor {
     private static final String OUTPUT_FILE = "META-INF/sbb-jar.xml";
     private static final String DOCTYPE_PUBLIC = "-//Sun Microsystems, Inc.//DTD JAIN SLEE SBB 1.1//EN";
     private static final String DOCTYPE_SYSTEM = "http://java.sun.com/dtd/slee-sbb-jar_1_1.dtd";

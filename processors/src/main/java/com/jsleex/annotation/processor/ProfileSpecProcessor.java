@@ -24,7 +24,7 @@ import java.util.Set;
 
 @SupportedAnnotationTypes(value = {"com.jsleex.annotation.ProfileSpec", "com.jsleex.annotation.ProfileSpecs"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-public class ProfileSpecProcessor extends AbstractProcessor {
+public class ProfileSpecProcessor extends JsleeXProcessor {
     private static final String OUTPUT_FILENAME = "META-INF/profile-spec-jar.xml";
     private static final String DOCTYPE_PUBLIC = "-//Sun Microsystems, Inc.//DTD JAIN SLEE Profile Specification 1.1//EN";
     private static final String DOCTYPE_SYSTEM = "http://java.sun.com/dtd/slee-profile-spec-jar_1_1.dtd";
