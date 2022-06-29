@@ -22,6 +22,12 @@
                 <cmp-field>
                     <cmp-field-name>integer</cmp-field-name>
                 </cmp-field>
+                <cmp-field>
+                    <cmp-field-name>count</cmp-field-name>
+                </cmp-field>
+                <cmp-field>
+                    <cmp-field-name>aci_local</cmp-field-name>
+                </cmp-field>
                 <get-child-relation-method>
                     <sbb-alias-ref>exampleChildSbb</sbb-alias-ref>
                     <get-child-relation-method-name>getExampleChildSbb</get-child-relation-method-name>

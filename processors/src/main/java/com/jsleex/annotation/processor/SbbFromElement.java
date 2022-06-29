@@ -33,6 +33,9 @@ public class SbbFromElement implements XmlFromElement {
         if (element.getKind().isClass() && element.getModifiers().contains(Modifier.ABSTRACT)) {
             com.jsleex.annotation.Sbb sbbAnnotation = element.getAnnotation(com.jsleex.annotation.Sbb.class);
             org.w3c.dom.Element sbbElement = doc.createElement("sbb");
+            if (!sbbAnnotation.id().isEmpty()) {
+                sbbElement.setAttribute("id", sbbAnnotation.id());
+            }
             fillInSbbComponentName(sbbAnnotation, sbbElement);
             fillInLibraryRefs(element, sbbElement);
             fillInSbbRefs(element, sbbElement);
@@ -120,8 +123,6 @@ public class SbbFromElement implements XmlFromElement {
         }
     }
 
-//<!ELEMENT sbb-classes (description?, sbb-abstract-class, sbb-local-interface?,
-//                       sbb-activity-context-interface?, sbb-usage-parameters-interface?)>
     private void fillInSbbClasses(Element element, com.jsleex.annotation.Sbb sbbAnnotation, org.w3c.dom.Element sbb) {
         final org.w3c.dom.Element sbbClasses = doc.createElement("sbb-classes");
         fillInSbbAbstractClass(element, sbbAnnotation, sbbClasses);

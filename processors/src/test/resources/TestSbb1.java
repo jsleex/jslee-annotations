@@ -1,19 +1,6 @@
 /*
  * JSLEE Annotations
- * Copyright (C) 2015 Piotr Grabowski
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2015-2022 Piotr Grabowski
  */
 
 package sbb;
@@ -21,8 +8,8 @@ package sbb;
 import com.jsleex.annotation.*;
 import com.jsleex.annotation.Sbb;
 import com.jsleex.annotation.example.TestLocalInterface;
-import com.jsleex.annotation.example.TestParent;
 import com.jsleex.annotation.example.TestSbbUsage;
+import com.jsleex.annotation.example.TestXDocletParent;
 
 import javax.slee.*;
 
@@ -39,7 +26,7 @@ import javax.slee.*;
 @SbbRef(name = "ExampleChild", vendor = "Test", version = "1.0", alias = "exampleChildSbb")
 @EjbRef(ejbRefName = "ExampleEjb", ejbRefType = EjbRef.EjbRefType.ENTITY, home = "com.jsleex.ejb.ExampleEJB", remote = "remote", ejbLink = "ejbLink")
 @SbbActivityContextAttributeAlias(attributeAliasName = "alias", sbbActivityContextAttributesNames = "example")
-public abstract class TestSbb1 extends TestParent {
+public abstract class TestSbb1 extends TestXDocletParent {
     @EventMethod(eventTypeName = "ExampleEvent", eventTypeVendor = "Test", eventTypeVersion = "1.0",
             initialEventSelectVariable = { EventMethod.InitialEventSelectVariable.ACTIVITY_CONTEXT, EventMethod.InitialEventSelectVariable.EVENT},
             initialEvent = true)
