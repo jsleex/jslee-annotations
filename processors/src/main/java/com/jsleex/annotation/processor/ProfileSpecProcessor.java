@@ -92,7 +92,7 @@ public class ProfileSpecProcessor extends JsleeXProcessor {
                     profileClasses.appendChild(profileCmpInterface);
                     //ugly
                     try {
-                        profileSpecAnn.profileManagementInterfaceName();
+                        profileSpecAnn.managementInterfaceName();
                     } catch (MirroredTypeException mte) {
                         TypeMirror typeMirror = mte.getTypeMirror();
                         String className = typeMirror.toString();
@@ -106,7 +106,7 @@ public class ProfileSpecProcessor extends JsleeXProcessor {
                     }
                     //ugly
                     try {
-                        profileSpecAnn.profileManagementAbstractClassName();
+                        profileSpecAnn.managementAbstractClassName();
                     } catch (MirroredTypeException mte) {
                         TypeMirror typeMirror = mte.getTypeMirror();
                         String className = typeMirror.toString();
@@ -124,6 +124,11 @@ public class ProfileSpecProcessor extends JsleeXProcessor {
                     EnvEntriesFromElement envEntriesFromElement = new EnvEntriesFromElement(annotationFinder, doc);
                     for (org.w3c.dom.Element envEntry : envEntriesFromElement.generate(element)) {
                         profileSpec.appendChild(envEntry);
+                    }
+                    if (profileSpecAnn.hintsSingleProfile()) {
+                        org.w3c.dom.Element profileHints = doc.createElement("profile-hints");
+                        profileHints.setAttribute("single-profile", "True");
+                        profileSpec.appendChild(profileHints);
                     }
                     //todo query, profile-hints
                     profileSpecJarElement.appendChild(profileSpec);

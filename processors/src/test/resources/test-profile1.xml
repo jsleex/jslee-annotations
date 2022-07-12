@@ -45,5 +45,6 @@
             <env-entry-type>java.lang.String</env-entry-type>
             <env-entry-value>test3binterface</env-entry-value>
         </env-entry>
+        <profile-hints single-profile="True"/>
     </profile-spec>
 </profile-spec-jar>

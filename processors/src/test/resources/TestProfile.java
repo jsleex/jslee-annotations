@@ -10,7 +10,7 @@ import com.jsleex.annotation.example.TestProfileParent;
 import com.jsleex.annotation.EnvEntry;
 import com.jsleex.annotation.ProfileSpec;
 
-@ProfileSpec(id = "Test", name = "Test", vendor = "Test", version = "Test")
+@ProfileSpec(id = "Test", name = "Test", vendor = "Test", version = "Test", hintsSingleProfile = true, eventsEnabled = false, readOnly = true)
 @EnvEntry(envEntryName = "test1", envEntryType = java.lang.String.class, envEntryValue = "test1")
 public class TestProfile extends TestProfileParent implements TestProfileInterface {
 }

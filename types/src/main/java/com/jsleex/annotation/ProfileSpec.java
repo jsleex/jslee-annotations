@@ -23,11 +23,13 @@ public @interface ProfileSpec {
 
     String version();
 
-    Class profileManagementInterfaceName() default Class.class;
+    Class managementInterfaceName() default Class.class;
 
-    Class profileManagementAbstractClassName() default Class.class;
+    Class managementAbstractClassName() default Class.class;
 
-    boolean profileHintsSingleProfile() default false;
+    boolean hintsSingleProfile() default false;
 
-    boolean profileEventsEnabled() default true;
+    boolean eventsEnabled() default true;
+
+    boolean readOnly() default true;
 }
