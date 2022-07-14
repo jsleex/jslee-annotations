@@ -76,7 +76,7 @@ public class ServiceProcessor extends JsleeXProcessor {
                     addRootSbb(service, element);
 
                     org.w3c.dom.Element defaultPriority = doc.createElement("default-priority");
-                    defaultPriority.setTextContent(String.valueOf(serviceAnnotation.defaultPriority()));
+                    defaultPriority.setTextContent(Byte.toString(serviceAnnotation.defaultPriority()));
                     service.appendChild(defaultPriority);
 
                     if (!serviceAnnotation.addressProfileTable().isEmpty())  {

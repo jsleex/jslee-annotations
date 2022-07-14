@@ -23,7 +23,7 @@ public class ChildRelationMethodTransform {
             getChildRelationMethodName.setTextContent(element.getSimpleName().toString());
             getChildRelationMethod.appendChild(getChildRelationMethodName);
             final org.w3c.dom.Element defaultPriority = doc.createElement("default-priority");
-            defaultPriority.setTextContent(Integer.toString(childRelationMethod.defaultPriority()));
+            defaultPriority.setTextContent(Byte.toString(childRelationMethod.defaultPriority()));
             getChildRelationMethod.appendChild(defaultPriority);
             return Optional.of(getChildRelationMethod);
         }

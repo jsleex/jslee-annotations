@@ -15,5 +15,5 @@ import java.lang.annotation.Target;
 public @interface ChildRelationMethod {
     String sbbAliasRef();
 
-    int defaultPriority() default 0;
+    byte defaultPriority() default 0;
 }

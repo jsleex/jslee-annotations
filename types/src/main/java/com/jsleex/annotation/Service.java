@@ -21,7 +21,7 @@ public @interface Service {
 
     String version();
 
-    int defaultPriority() default 0;
+    byte defaultPriority() default 0;
 
     String addressProfileTable() default "";
 
